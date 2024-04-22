@@ -1,6 +1,6 @@
 module github.com/filariow/vcache
 
-go 1.21.8
+go 1.22
 
 require (
 	github.com/onsi/ginkgo/v2 v2.17.1
