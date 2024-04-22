@@ -17,13 +17,13 @@ import (
 type Cache struct {
 	client.Reader
 
-	store   store.Store
+	store   *store.Store
 	manager ctrl.Manager
 
 	options *Options
 }
 
-type ReconcileFunc func(context.Context, store.Store, ctrl.Request) (ctrl.Result, error)
+type ReconcileFunc func(context.Context, *store.Store, ctrl.Request) (ctrl.Result, error)
 
 func New(
 	mgr ctrl.Manager,

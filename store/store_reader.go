@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"fmt"
+	"reflect"
 
 	"k8s.io/apimachinery/pkg/api/meta"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
@@ -17,8 +18,15 @@ import (
 // Get retrieves an obj for the given object key from the Kubernetes Cluster.
 // obj must be a struct pointer so that obj can be updated with the response
 // returned by the Server.
-func (s *store) Get(ctx context.Context, key client.ObjectKey, obj client.Object, _ ...client.GetOption) error {
-	o, exists, err := s.indexer.Get(key)
+func (s *Store) Get(ctx context.Context, key client.ObjectKey, obj client.Object, _ ...client.GetOption) error {
+  m, err := meta.Accessor(obj.DeepCopyObject())
+  if err != nil {
+    return err
+  }
+  
+  m.SetName(key.Name)
+  m.SetNamespace(key.Namespace)
+  o, exists, err := s.indexer.Get(m)
 	if err != nil {
 		return err
 	}
@@ -26,14 +34,16 @@ func (s *store) Get(ctx context.Context, key client.ObjectKey, obj client.Object
 		return ErrNotFound
 	}
 
-	obj = o.(runtime.Object).DeepCopyObject().(client.Object)
+  reflect.ValueOf(o).
+    MethodByName("DeepCopyInto").
+    Call([]reflect.Value{reflect.ValueOf(obj)})
 	return nil
 }
 
 // List retrieves list of objects for a given namespace and list options. On a
 // successful call, Items field in the list will be populated with the
 // result returned from the server.
-func (s *store) List(ctx context.Context, list client.ObjectList, opts ...client.ListOption) error {
+func (s *Store) List(ctx context.Context, list client.ObjectList, opts ...client.ListOption) error {
 	listOpts := client.ListOptions{}
 	listOpts.ApplyOptions(opts)
 
@@ -59,7 +69,7 @@ func (s *store) List(ctx context.Context, list client.ObjectList, opts ...client
 	return apimeta.SetList(list, robjs)
 }
 
-func (s *store) listWithFieldSelector(listOpts client.ListOptions) ([]interface{}, error) {
+func (s *Store) listWithFieldSelector(listOpts client.ListOptions) ([]interface{}, error) {
 	switch {
 	case listOpts.FieldSelector != nil:
 		return s.listByIndexes(listOpts.FieldSelector)
@@ -70,7 +80,7 @@ func (s *store) listWithFieldSelector(listOpts client.ListOptions) ([]interface{
 	}
 }
 
-func (s *store) listByIndexes(fieldSelector fields.Selector) ([]interface{}, error) {
+func (s *Store) listByIndexes(fieldSelector fields.Selector) ([]interface{}, error) {
 	rr := fieldSelector.Requirements()
 	if len(rr) == 0 {
 		return s.indexer.List(), nil

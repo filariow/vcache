@@ -9,27 +9,21 @@ import (
 
 var ErrNotFound error = fmt.Errorf("obj not found")
 
-type Store interface {
-	client.Reader
-
-	EnsureExists(client.Object) error
-	EnsureNotExists(client.Object) error
-}
-
-func New(indexers cache.Indexers) *store {
-	return &store{
+func New(indexers cache.Indexers) *Store {
+	return &Store{
 		indexer: cache.NewIndexer(cache.MetaNamespaceKeyFunc, indexers),
 	}
 }
 
-type store struct {
+type Store struct {
 	indexer cache.Indexer
 }
 
-func (s *store) EnsureExists(obj client.Object) error {
-	return s.indexer.Add(obj)
+func (s *Store) EnsureExists(obj client.Object) error {
+  return s.indexer.Add(obj)
 }
 
-func (s *store) EnsureNotExists(obj client.Object) error {
+func (s *Store) EnsureNotExists(obj client.Object) error {
 	return s.indexer.Delete(obj)
 }
+
