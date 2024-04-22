@@ -1,11 +1,11 @@
-package store
+package deepcopy
 
 import (
 	"fmt"
 	"reflect"
 )
 
-func reflectDeepCopyInto(source, target interface{}) error {
+func Into(source, target interface{}) error {
 	sv := reflect.TypeOf(source)
 	tv := reflect.TypeOf(target)
 	if tv != sv {
@@ -29,17 +29,17 @@ func reflectDeepCopyInto(source, target interface{}) error {
 	return doReflectDeepCopyInto(source, target)
 }
 
+type invoker struct {
+	err error
+}
+
 func doReflectDeepCopyInto(source, target interface{}) error {
-	i := reflectDeepCopyIntoInvoker{}
+	i := invoker{}
 	i.doReflectDeepCopyInto(source, target)
 	return i.err
 }
 
-type reflectDeepCopyIntoInvoker struct {
-	err error
-}
-
-func (i *reflectDeepCopyIntoInvoker) doReflectDeepCopyInto(source, target interface{}) {
+func (i *invoker) doReflectDeepCopyInto(source, target interface{}) {
 	defer func() {
 		if err := recover(); err != nil {
 			i.err = fmt.Errorf("error invoking DeepCopyInto from %T to %T: %v", source, target, err)

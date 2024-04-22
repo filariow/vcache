@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/filariow/vcache/deepcopy"
 	"k8s.io/apimachinery/pkg/api/meta"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/fields"
@@ -33,7 +34,7 @@ func (s *Store) Get(ctx context.Context, key client.ObjectKey, obj client.Object
 		return ErrNotFound
 	}
 
-	return reflectDeepCopyInto(o, obj)
+	return deepcopy.Into(o, obj)
 }
 
 // List retrieves list of objects for a given namespace and list options. On a
