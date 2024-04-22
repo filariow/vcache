@@ -3,7 +3,6 @@ package store
 import (
 	"context"
 	"fmt"
-	"reflect"
 
 	"k8s.io/apimachinery/pkg/api/meta"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
@@ -34,10 +33,7 @@ func (s *Store) Get(ctx context.Context, key client.ObjectKey, obj client.Object
 		return ErrNotFound
 	}
 
-	reflect.ValueOf(o).
-		MethodByName("DeepCopyInto").
-		Call([]reflect.Value{reflect.ValueOf(obj)})
-	return nil
+	return reflectDeepCopyInto(o, obj)
 }
 
 // List retrieves list of objects for a given namespace and list options. On a
