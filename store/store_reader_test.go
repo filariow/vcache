@@ -2,8 +2,6 @@ package store_test
 
 import (
 	"context"
-	"slices"
-	"strings"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -12,7 +10,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/client-go/tools/cache"
 
 	"github.com/filariow/vcache/store"
 )
@@ -97,7 +94,7 @@ var _ = Describe("StoreReader", func() {
 				cc := corev1.ConfigMapList{}
 				err := st.List(ctx, &cc)
 				Expect(err).To(BeNil())
-				Expect(sortObjectList(cc.Items)).To(BeEquivalentTo(sortObjectList(cms)))
+				Expect(cc.Items).To(ConsistOf(cms))
 			})
 		})
 	})
@@ -154,7 +151,7 @@ var _ = Describe("list by label", func() {
 			// then
 			Expect(err).To(BeNil())
 			Expect(cc.Items).NotTo(BeNil())
-			Expect(sortObjectList(cc.Items)).To(Equal(sortObjectList(expected)))
+			Expect(cc.Items).To(ConsistOf(expected))
 
 		},
 		Entry("no labels", cms, ""),
@@ -164,27 +161,3 @@ var _ = Describe("list by label", func() {
 		Entry("my-label-alt=set", []corev1.ConfigMap{cms[4]}, "my-label-alt=set"),
 	)
 })
-
-type A[B any, _ *B] interface {
-	client.Object
-}
-
-func sortObjectList[T ~[]E, E any, _ []A[E, *E]](objs T) T {
-	if len(objs) == 0 {
-		return objs
-	}
-
-	slices.SortFunc(objs, func(a, b E) int {
-		na, err := cache.MetaNamespaceKeyFunc(&a)
-		if err != nil {
-			panic(err)
-		}
-		nb, err := cache.MetaNamespaceKeyFunc(&b)
-		if err != nil {
-			panic(err)
-		}
-
-		return strings.Compare(na, nb)
-	})
-	return objs
-}
