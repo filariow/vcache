@@ -19,14 +19,14 @@ import (
 // obj must be a struct pointer so that obj can be updated with the response
 // returned by the Server.
 func (s *Store) Get(ctx context.Context, key client.ObjectKey, obj client.Object, _ ...client.GetOption) error {
-  m, err := meta.Accessor(obj.DeepCopyObject())
-  if err != nil {
-    return err
-  }
-  
-  m.SetName(key.Name)
-  m.SetNamespace(key.Namespace)
-  o, exists, err := s.indexer.Get(m)
+	m, err := meta.Accessor(obj.DeepCopyObject())
+	if err != nil {
+		return err
+	}
+
+	m.SetName(key.Name)
+	m.SetNamespace(key.Namespace)
+	o, exists, err := s.indexer.Get(m)
 	if err != nil {
 		return err
 	}
@@ -34,9 +34,9 @@ func (s *Store) Get(ctx context.Context, key client.ObjectKey, obj client.Object
 		return ErrNotFound
 	}
 
-  reflect.ValueOf(o).
-    MethodByName("DeepCopyInto").
-    Call([]reflect.Value{reflect.ValueOf(obj)})
+	reflect.ValueOf(o).
+		MethodByName("DeepCopyInto").
+		Call([]reflect.Value{reflect.ValueOf(obj)})
 	return nil
 }
 
