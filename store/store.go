@@ -20,7 +20,7 @@ type Store struct {
 }
 
 func (s *Store) EnsureExists(obj client.Object) error {
-	return s.indexer.Add(obj)
+	return s.indexer.Add(obj.DeepCopyObject())
 }
 
 func (s *Store) EnsureNotExists(obj client.Object) error {

@@ -1,13 +1,12 @@
 package store_test
 
 import (
+	"context"
 	"errors"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	"context"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -31,15 +30,24 @@ var _ = Describe("Store", func() {
 		})
 
 		It("returns an error if the object is nil", func() {
-			// when
-			err := st.EnsureExists(nil)
+			var recoverErr interface{}
+			func() {
+				defer func() {
+					recoverErr = recover()
+				}()
+
+				// when
+				_ = st.EnsureExists(nil)
+
+				Expect(false).To(BeTrue())
+			}()
 
 			// then: an error is returned
-			Expect(err).NotTo(BeNil())
+			Expect(recoverErr).NotTo(BeNil())
 
 			// then: cached entries didn't change
 			cmm := corev1.ConfigMapList{}
-			err = st.List(ctx, &cmm)
+			err := st.List(ctx, &cmm)
 			Expect(err).To(BeNil())
 			Expect(cmm.Items).To(BeEmpty())
 		})
