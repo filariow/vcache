@@ -165,11 +165,11 @@ var _ = Describe("list by label", func() {
 	)
 })
 
-type A[B any, P *B] interface {
+type A[B any, _ *B] interface {
 	client.Object
 }
 
-func sortObjectList[T ~[]E, E any, P *E, G []A[E, P]](objs T) T {
+func sortObjectList[T ~[]E, E any, _ []A[E, *E]](objs T) T {
 	if len(objs) == 0 {
 		return objs
 	}
