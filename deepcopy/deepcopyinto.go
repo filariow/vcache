@@ -5,6 +5,7 @@ import (
 	"reflect"
 )
 
+// Into copies source to target if they are of the same type and have a DeepCopyInto method
 func Into(source, target interface{}) error {
 	sv := reflect.TypeOf(source)
 	tv := reflect.TypeOf(target)
