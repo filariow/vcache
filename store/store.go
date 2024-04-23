@@ -1,13 +1,9 @@
 package store
 
 import (
-	"fmt"
-
 	"k8s.io/client-go/tools/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
-
-var ErrNotFound error = fmt.Errorf("obj not found")
 
 func New(indexers cache.Indexers) *Store {
 	return &Store{

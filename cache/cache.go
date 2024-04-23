@@ -1,4 +1,4 @@
-package main
+package cache
 
 import (
 	"context"
@@ -23,7 +23,15 @@ type Cache struct {
 	options *Options
 }
 
-type ReconcileFunc func(context.Context, *store.Store, ctrl.Request) (ctrl.Result, error)
+func (c *Cache) Store() *store.Store {
+	return c.store
+}
+
+func (c *Cache) Client() client.Client {
+	return c.manager.GetClient()
+}
+
+type ReconcileFunc func(context.Context, *Cache, ctrl.Request) (ctrl.Result, error)
 
 func New(
 	mgr ctrl.Manager,
@@ -39,23 +47,29 @@ func New(
 	}
 
 	store := store.New(opts.Indexers)
+
+	c := &Cache{
+		store:   store,
+		manager: mgr,
+		options: opts,
+	}
+
 	if err := b.Complete(reconcile.Func(
 		func(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-			return reconcileFunc(ctx, store, req)
+			return reconcileFunc(ctx, c, req)
 		}),
 	); err != nil {
 		return nil, err
 	}
-
-	return &Cache{
-		store:   store,
-		manager: mgr,
-		options: opts,
-	}, nil
+	return c, nil
 }
 
 func (c *Cache) Start(ctx context.Context) error {
 	return c.manager.Start(ctx)
+}
+
+func (c *Cache) WaitForCacheSync(ctx context.Context) bool {
+	return c.manager.GetCache().WaitForCacheSync(ctx)
 }
 
 // Get retrieves an obj for the given object key from the Kubernetes Cluster.

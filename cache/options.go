@@ -1,4 +1,4 @@
-package main
+package cache
 
 import (
 	"k8s.io/apimachinery/pkg/runtime"

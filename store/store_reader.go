@@ -15,6 +15,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+var ErrNotFound error = fmt.Errorf("object not found")
+
 // Get retrieves an obj for the given object key from the Kubernetes Cluster.
 // obj must be a struct pointer so that obj can be updated with the response
 // returned by the Server.
